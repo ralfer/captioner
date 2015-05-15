@@ -8,7 +8,8 @@
 #' @param type Vector with same length as `levels` indicating whether figure numbering should be numeric ("n"), lowercase character ("c"), or uppercase character ("C").  If unspecified, `captioner` will revert to all numeric values.
 #' @param infix Character string containing text to go between figure numbers if hierarchical numbering is on.  Default is "."
 #' @param suffix Character string containing text to go after object number. The default is ": ".
-
+#' @param style  Character string indicating md style to use for prefix (not the name and not the in-text citation). Possible options: "n" - none, "i" - italics, "b" - bold. The default is "n".
+#'
 #' @return A captioner function.
 #' 
 #' @details Captioner generates a function with the following parameters
@@ -51,7 +52,7 @@
 #' @export
 
 captioner <- function(prefix = "Figure", auto_space = TRUE, levels = 1,
-                      type = NULL, infix = ".", suffix = ": ")
+                      type = NULL, infix = ".", suffix = ": ", style = "n")
 {
   ## Make sure all of the parameters are setup correctly ---
   
@@ -61,6 +62,7 @@ captioner <- function(prefix = "Figure", auto_space = TRUE, levels = 1,
   check_class(levels,     "numeric")
   check_class(infix,      "character")
   check_class(suffix,      "character")
+  check_class(style,      "character")
   
   # Check "type" vector
   
@@ -79,6 +81,10 @@ captioner <- function(prefix = "Figure", auto_space = TRUE, levels = 1,
     stop("Invalid 'type' value used.  Expecting 'n', 'c', or 'C'.")
   }
   
+  # Check style value
+  if (!style %in% c('n','b','i')) 
+      stop("Invalid 'style' value used.  Expecting 'n', 'i', or 'b'.")
+
   # Add a space after the prefix if auto_space is on
   if(auto_space){
     prefix <- paste0(prefix, " ")
@@ -169,7 +175,13 @@ captioner <- function(prefix = "Figure", auto_space = TRUE, levels = 1,
     } else if(cite) {
       text <- paste0(prefix, obj_num)
     } else {
-      text <- paste0(prefix, obj_num, suffix, caption)
+      id <- paste0(prefix, obj_num, suffix)
+      if (style == 'i') 
+        text <- paste0("*", id, "*", caption)
+      else if (style == 'b') 
+        text <- paste0("**", id, "**", caption)
+      else 
+        text <- paste0(id, caption)
     }
     
     return(text)
